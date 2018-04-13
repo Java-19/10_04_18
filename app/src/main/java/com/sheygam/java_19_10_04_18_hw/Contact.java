@@ -1,15 +1,21 @@
 package com.sheygam.java_19_10_04_18_hw;
 
-public class Contact {
+import java.io.Serializable;
+
+public class Contact implements Serializable{
     private String name;
     private String email;
+    private String phone;
+    private String address;
 
     public Contact() {
     }
 
-    public Contact(String name, String email) {
+    public Contact(String name, String email, String phone, String address) {
         this.name = name;
         this.email = email;
+        this.phone = phone;
+        this.address = address;
     }
 
     public String getName() {
@@ -28,13 +34,29 @@ public class Contact {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     @Override
     public String toString() {
-        return name + "," + email;
+        return name + "," + email+","+phone+","+address;
     }
 
     public static Contact newInstance(String str){
         String[] arr = str.split(",");
-        return new Contact(arr[0],arr[1]);
+        return new Contact(arr[0],arr[1],arr[2],arr[3]);
     }
 }

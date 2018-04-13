@@ -1,45 +1,50 @@
 package com.sheygam.java_19_10_04_18_hw;
 
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.EditText;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
-
+    private EditText inputEmail, inputPassword;
+    private Button loginBtn;
+    private StoreProvider storeProvider;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        storeProvider = new StoreProvider(this);
+        if(storeProvider.isAuth()){
+            startListActivity();
+        }
         setContentView(R.layout.activity_login);
-        findViewById(R.id.show_dialog_btn)
-                .setOnClickListener(this);
+        inputEmail = findViewById(R.id.input_email);
+        inputPassword = findViewById(R.id.input_password);
+        loginBtn = findViewById(R.id.login_btn);
+        loginBtn.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        if(v.getId() == R.id.show_dialog_btn){
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle("Error!")
-                    .setIcon(R.mipmap.ic_launcher)
-                    .setMessage("Something was wrong")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(LoginActivity.this, "Was clocked ok", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("No",null)
-                    .setNeutralButton("Cancel",null)
-                    .setCancelable(false)
-                    .create();
-            dialog.show();
+        if(v.getId() == R.id.login_btn){
+            String email = inputEmail.getText().toString();
+            String password = inputPassword.getText().toString();
+            storeProvider.login(email,password);
+            startListActivity();
         }
     }
 
+    private void startListActivity(){
+        startActivityForResult(new Intent(this,ContactListActivity.class),1);
+    }
+
     @Override
-    public void onBackPressed() {
-//        super.onBackPressed();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode != RESULT_OK){
+            finish();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+
     }
 }
