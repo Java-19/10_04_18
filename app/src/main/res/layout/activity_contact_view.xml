@@ -85,4 +85,16 @@
             android:layout_marginTop="16dp"
             android:id="@+id/input_address"/>
     </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#beffffff"
+        android:id="@+id/progress_frame"
+        android:visibility="invisible">
+        <ProgressBar
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 </RelativeLayout>

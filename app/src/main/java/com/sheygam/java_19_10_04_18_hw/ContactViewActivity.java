@@ -1,6 +1,7 @@
 package com.sheygam.java_19_10_04_18_hw;
 
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,7 +13,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ContactViewActivity extends AppCompatActivity {
     private Contact currentContact;
@@ -22,6 +25,8 @@ public class ContactViewActivity extends AppCompatActivity {
     private TextView nameTxt, emailTxt, phoneTxt,addressTxt;
     private EditText inputName, inputEmail, inputPhone, inputAddress;
     private ViewGroup inputWrapper,viewWrapper;
+    private FrameLayout progressFrame;
+    private boolean isUpdating = false;
 
     private MenuItem deleteItem,doneItem,editItem;
 
@@ -49,6 +54,8 @@ public class ContactViewActivity extends AppCompatActivity {
         inputAddress = findViewById(R.id.input_address);
         inputWrapper = findViewById(R.id.input_wrapper);
         viewWrapper = findViewById(R.id.view_wrapper);
+        progressFrame = findViewById(R.id.progress_frame);
+        progressFrame.setOnClickListener(null);
 
         inputEmail.addTextChangedListener(new TextWatcher() {
             @Override
@@ -113,27 +120,33 @@ public class ContactViewActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.done_item:
-                currentContact.setName(inputName.getText().toString());
-                currentContact.setPhone(inputPhone.getText().toString());
-                currentContact.setEmail(inputEmail.getText().toString());
-                currentContact.setAddress(inputAddress.getText().toString());
-                if(currentPosition<0){
-                    storeProvider.add(currentContact);
-                }else{
-                    storeProvider.update(currentContact,currentPosition);
-                }
-                finish();
-                break;
-            case R.id.remove_item:
-                storeProvider.remove(currentPosition);
-                finish();
-                break;
-            case R.id.edit_item:
-                setMenuEdit();
-                break;
+        if(isUpdating){
+            Toast.makeText(this, "Wait for updating!", Toast.LENGTH_SHORT).show();
+        }else {
+            switch (item.getItemId()) {
+                case R.id.done_item:
+//                    currentContact.setName(inputName.getText().toString());
+//                    currentContact.setPhone(inputPhone.getText().toString());
+//                    currentContact.setEmail(inputEmail.getText().toString());
+//                    currentContact.setAddress(inputAddress.getText().toString());
+//                    if (currentPosition < 0) {
+//                        storeProvider.add(currentContact);
+//                    } else {
+//                        storeProvider.update(currentContact, currentPosition);
+//                    }
+//                    finish();
+                    new SaveTask().execute();
+                    break;
+                case R.id.remove_item:
+//                    storeProvider.remove(currentPosition);
+//                    finish();
+                    new RemoveTask().execute();
+                    break;
+                case R.id.edit_item:
+                    setMenuEdit();
+                    break;
 
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -176,10 +189,76 @@ public class ContactViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(isEdit && currentPosition >=0){
+        if(isUpdating){
+            Toast.makeText(this, "Wait for updating!", Toast.LENGTH_SHORT).show();
+        }else if(isEdit && currentPosition >=0){
            showDialog();
         }else {
             super.onBackPressed();
         }
     }
+
+    class SaveTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected void onPreExecute() {
+            isUpdating = true;
+            progressFrame.setVisibility(View.VISIBLE);
+            currentContact.setName(inputName.getText().toString());
+            currentContact.setPhone(inputPhone.getText().toString());
+            currentContact.setEmail(inputEmail.getText().toString());
+            currentContact.setAddress(inputAddress.getText().toString());
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (currentPosition < 0) {
+                storeProvider.add(currentContact);
+            } else {
+                storeProvider.update(currentContact, currentPosition);
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            isUpdating = false;
+            progressFrame.setVisibility(View.INVISIBLE);
+            finish();
+        }
+    }
+
+    class RemoveTask  extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected void onPreExecute() {
+            progressFrame.setVisibility(View.VISIBLE);
+            isUpdating = true;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            storeProvider.remove(currentPosition);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            progressFrame.setVisibility(View.INVISIBLE);
+            isUpdating = false;
+            finish();
+        }
+    }
+
+
 }
